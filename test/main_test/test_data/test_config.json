@@ -1,0 +1,32 @@
+{
+  "mappings": [
+    {
+      "name": "TBL_1",
+      "reader": {
+        "type":"AutoBoundaryDetectReader"
+      },
+      "writer": {
+        "type": "SimpleWriter",
+        "config": {
+          "withHeader": true
+        }
+      }
+    },
+    {
+      "name": "TBL_2",
+      "reader": {
+        "type":"FixedBoundaryDetectReader",
+        "config": {
+          "start": 0,
+          "end": 1
+        }
+      },
+      "writer": {
+        "type": "SimpleWriter",
+        "config": {
+          "withHeader": true
+        }
+      }
+    }
+  ]
+}
