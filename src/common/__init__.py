@@ -1,1 +1,1 @@
-
+from common.ParseTemplate import *

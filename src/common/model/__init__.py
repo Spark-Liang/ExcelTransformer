@@ -1,1 +1,1 @@
-from common.model.ObjectModel import *
+from common.model.ObjectModel import Cell, CellsArea, OrthorhombicLine

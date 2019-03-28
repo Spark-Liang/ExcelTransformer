@@ -1,5 +1,4 @@
 import math
-from typing import Iterable
 
 
 class CellsArea(object):
@@ -78,6 +77,19 @@ class Cell(object):
             return True
         else:
             return False
+
+    def move(self, direction, distance=1, reverse=False):
+        """
+
+        :param str direction:
+        :param int distance:
+        :param bool reverse:
+        :return:
+        """
+        if direction == "row":
+            return Cell(self.__x, self.__y + distance * (1 if not reverse else -1))
+        elif direction == "column":
+            return Cell(self.__x + distance * (1 if not reverse else -1), self.__y)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
