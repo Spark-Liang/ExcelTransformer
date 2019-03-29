@@ -1,0 +1,7 @@
+{
+  "readers": {
+    "TBL_1": {
+      "skip_header": "false"
+    }
+  }
+}
