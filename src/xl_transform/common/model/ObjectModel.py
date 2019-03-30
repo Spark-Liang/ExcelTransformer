@@ -6,8 +6,8 @@ class CellsArea(object):
     def __init__(self, top_left_point, bottom_right_point, sheet_name):
         """
 
-        :param (int,int) top_left_point: the position of the top left of the area.
-        :param (int,int) bottom_right_point:
+        :param (int,int) or Cell top_left_point: the position of the top left of the area.
+        :param (int,int) or Cell bottom_right_point:
         :param str sheet_name:
         """
         if (top_left_point[0] < 0 or top_left_point[1] < 0
@@ -16,10 +16,8 @@ class CellsArea(object):
         if (top_left_point[0] >= bottom_right_point[0]
                 or top_left_point[1] >= bottom_right_point[1]):
             raise Exception("The top_left_point most at the top left side of the bottom_right_point!")
-        if sheet_name is None:
-            raise Exception("Please provide the sheet name of the cells area!")
-        self.top_left_point = (top_left_point[0], top_left_point[1])
-        self.bottom_right_point = (bottom_right_point[0], bottom_right_point[1])
+        self.top_left_point = Cell(top_left_point[0], top_left_point[1])
+        self.bottom_right_point = Cell(bottom_right_point[0], bottom_right_point[1])
         self.sheet_name = sheet_name
 
     def is_intersect_with(self, other):
@@ -102,6 +100,14 @@ class Cell(object):
     def __str__(self):
         return "Cell({},{})".format(self.x, self.y)
 
+    def __getitem__(self, item):
+        if item == 0:
+            return self.__x
+        elif item == 1:
+            return self.__y
+        else:
+            err_msg = "Only support '0' and '1' as the index"
+            raise Exception(err_msg)
 
 class OrthorhombicLine(object):
     """

@@ -1,0 +1,6 @@
+{
+  "with_header": "true",
+  "format": {
+    "*": "decimal(2)"
+  }
+}

@@ -25,14 +25,14 @@ class Template(object):
         file_type = file_type_hint
         if file_type is None:
             if template_file_path.endswith(".csv"):
-                file_type = "csv"
+                self.__file_type = "csv"
             elif template_file_path.endswith(".xlsx"):
-                file_type = "excel"
+                self.__file_type = "excel"
             else:
                 err_msg = "Unsupported type of file: " + template_file_path
                 raise Exception(err_msg)
 
-        if file_type == "csv":
+        if self.__file_type == "csv":
             self.__info_items = parse_csv_template(template_file_path)
         else:
             self.__info_items = parse_excel_template(template_file_path)
@@ -41,6 +41,9 @@ class Template(object):
     def info_items(self):
         return list(self.__info_items)
 
+    @property
+    def file_type(self):
+        return self.__file_type
 
 class TemplateInfoItem(object):
     """

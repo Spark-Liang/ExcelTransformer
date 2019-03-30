@@ -1,0 +1,37 @@
+{
+  "readers": {
+    "TBL_1": {
+      "skip_header": "true",
+      "type_hints": {
+        "Date_1": "date(%Y/%m/%d %H:%M:%S)",
+        "Date_2": "date(%Y/%m/%d)",
+        "str": "str",
+        "int": "int",
+        "float": "float",
+        "decimal_2": "decimal(2)"
+      }
+    },
+    "TBL_2": {
+      "skip_header": "false"
+    }
+  },
+  "writers": {
+    "TBL_1": {
+      "with_header": "true",
+      "format": {
+        "Date_1": "date(%Y-%m-%d %H:%M:%S)",
+        "Date_2": "date(%Y-%m-%d)",
+        "str": "str",
+        "int": "int",
+        "float": "float",
+        "decimal_2": "decimal(2)"
+      }
+    },
+    "TBL_2": {
+      "with_header": "true",
+      "format": {
+        "*": "decimal(2)"
+      }
+    }
+  }
+}

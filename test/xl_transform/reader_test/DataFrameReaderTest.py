@@ -1,3 +1,4 @@
+import datetime
 import decimal
 import json
 import time
@@ -150,23 +151,21 @@ class TestReadExcel(unittest.TestCase):
     def test_read_with_type_hint(self):
         # given
         test_name = "ReadWithTypeHint"
-        file_type = "csv"
+        file_type = "excel"
         source_path = get_test_data_source_path(test_name, file_type)
         config = read_reader_config(test_name, file_type)
         info_item = TemplateInfoItem(
-            None, Cell(0, 0), "TBL_1",
-            ["Date_1", "Date_2", "str", "int", "float", "decimal_2"], row
+            "Data", Cell(0, 0), "TBL_1",
+            ["Date_1", "Date_2", "decimal_2"], row
         )
         sut = SUT(info_item, config)
         expected_decimal_context = decimal.getcontext()
         expected_decimal_context.prec = 2
         expected_data_frame = DataFrame({
-            "Date_1": [time.strptime(string, "%Y/%m/%d %H:%M:%S") for string in
+            "Date_1": [datetime.datetime.strptime(string, "%Y/%m/%d %H:%M:%S") for string in
                        ["2019/12/31 12:23:00", "2019/12/31 9:04:01", "2020/1/1 9:04:01"]],
-            "Date_2": [time.strptime(string, "%Y/%m/%d") for string in ["2019/12/20", "2019/12/21", "2019/12/22"]],
-            "str": ["20", "0.656070049", "-0.344592265"],
-            "int": [30, -30, 0],
-            "float": [40, 0.885854449, -0.027395487],
+            "Date_2": [datetime.datetime.strptime(string, "%Y/%m/%d") for string in
+                       ["2019/12/20", "2019/12/21", "2019/12/22"]],
             "decimal_2": [decimal.Decimal(x, expected_decimal_context) for x in ["10", "-10", "12.35"]]
         })
 
@@ -182,12 +181,12 @@ class TestReadExcel(unittest.TestCase):
     def test_raise_exception_when_failed_to_transfer_data_type(self):
         # given
         test_name = "ReadFailedByTransferError"
-        file_type = "csv"
+        file_type = "excel"
         source_path = get_test_data_source_path(test_name, file_type)
         config = read_reader_config(test_name, file_type)
         info_item = TemplateInfoItem(
             None, Cell(0, 0), "TBL_1",
-            ["Date_1", "Date_2", "str", "int", "float", "decimal_2"], row
+            ["Date_1", "Date_2", "decimal_2"], row
         )
         sut = SUT(info_item, config)
 
@@ -319,7 +318,7 @@ class TestReadCSV(unittest.TestCase):
         config = read_reader_config(test_name, file_type)
         info_item = TemplateInfoItem(
             None, Cell(0, 0), "TBL_1",
-            ["Date_1", "Date_2", "str", "int", "float", "decimal_2"], row
+            ["Date_1", "Date_2", "decimal_2"], row
         )
         sut = SUT(info_item, config)
         expected_decimal_context = decimal.getcontext()
@@ -328,9 +327,6 @@ class TestReadCSV(unittest.TestCase):
             "Date_1": [time.strptime(string, "%Y/%m/%d %H:%M:%S") for string in
                        ["2019/12/31 12:23:00", "2019/12/31 9:04:01", "2020/1/1 9:04:01"]],
             "Date_2": [time.strptime(string, "%Y/%m/%d") for string in ["2019/12/20", "2019/12/21", "2019/12/22"]],
-            "str": ["20", "0.656070049", "-0.344592265"],
-            "int": [30, -30, 0],
-            "float": [40, 0.885854449, -0.027395487],
             "decimal_2": [decimal.Decimal(x, expected_decimal_context) for x in ["10", "-10", "12.35"]]
         })
 
@@ -351,7 +347,7 @@ class TestReadCSV(unittest.TestCase):
         config = read_reader_config(test_name, file_type)
         info_item = TemplateInfoItem(
             None, Cell(0, 0), "TBL_1",
-            ["Date_1", "Date_2", "str", "int", "float", "decimal_2"], row
+            ["Date_1", "Date_2", "decimal_2"], row
         )
         sut = SUT(info_item, config)
 

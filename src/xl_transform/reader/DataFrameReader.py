@@ -2,6 +2,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from xl_transform.common import TemplateInfoItem, row
+from xl_transform.common.ConfigPaseUtils import get_str2type_transfer_func
 
 
 class DataFrameReader(object):
@@ -15,9 +16,9 @@ class DataFrameReader(object):
         self.__sheet_name = info_item.sheet_name
         self.__top_left_point = info_item.top_left_point
         self.__mapping_name = info_item.mapping_name
-        self.__headers = info_item.headers
+        self.__headers = list(info_item.headers)
         self.__header_direction = info_item.header_direction
-        self.__config = config
+        self.__config = config.copy()
 
     def read(self, source_file_path):
         """
@@ -40,11 +41,13 @@ class DataFrameReader(object):
 
         unbounded_data = self.__get_unbounded_data(df)
 
+        # support the feature: can auto detect the header, when input such symbol "${<mapping_name>:_}".
         headers = [
             header_in_info_item if "_" != header_in_info_item else header_in_data
             for header_in_data, header_in_info_item
             in zip(unbounded_data.iloc[0].values, self.__headers)
         ]
+        self.__headers = headers
 
         columns_rename_map = {
             old: new for old, new in zip(unbounded_data.columns.values, headers)
@@ -108,40 +111,13 @@ class DataFrameReader(object):
 
         max_row_idx = df.shape[0]
         for header_name, type_hint in type_hints.items():
+            if header_name not in self.__headers:
+                continue
             column_idx = self.__headers.index(header_name)
-            transfer_func = get_type_transfer_func(type_hint)
+            transfer_func = get_str2type_transfer_func(type_hint)
             if transfer_func is None:
                 continue
             for row_idx in range(0, max_row_idx):
                 old_val = df.iloc[row_idx].iloc[column_idx]
                 new_value = transfer_func(old_val) if old_val is not None else old_val
                 df.iloc[row_idx].iloc[column_idx] = new_value
-
-
-def get_type_transfer_func(type_hint):
-    """
-
-    :param str type_hint:
-    :return:
-    """
-    import re
-    import time
-    import decimal
-    type_date_pattern = r"date\((.+)\)"
-    type_int_pattern = r"int"
-    type_float_pattern = r"float"
-    type_decimal_pattern = r"decimal\((\d+)\)"
-
-    if re.match(type_date_pattern, type_hint):
-        date_format = re.match(type_date_pattern, type_hint).group(1)
-        return lambda str_val: time.strptime(str_val, date_format)
-    elif re.match(type_int_pattern, type_hint):
-        return lambda str_val: int(str_val)
-    elif re.match(type_float_pattern, type_hint):
-        return lambda str_val: float(str_val)
-    elif re.match(type_decimal_pattern, type_hint):
-        prec = re.match(type_decimal_pattern, type_hint).group(1)
-        context = decimal.getcontext()
-        context.prec = int(prec)
-        return lambda str_val: decimal.Decimal(str_val, context)
-    return None

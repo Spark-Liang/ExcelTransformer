@@ -1,0 +1,7 @@
+{
+  "with_header": "true",
+  "rows_limit": 5,
+  "format": {
+    "*": "decimal(2)"
+  }
+}
