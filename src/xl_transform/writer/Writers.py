@@ -1,9 +1,12 @@
-import pandas as pd
+import os
+
+import openpyxl
 from pandas import DataFrame
 
-from xl_transform.common import Template, TemplateInfoItem, column
-from xl_transform.common.ConfigPaseUtils import get_type2str_transfer_func
+from xl_transform.common import Template, TemplateInfoItem, row, column
+from xl_transform.common.ConfigPaseUtils import get_value_convert_func
 from xl_transform.common.model import CellsArea, Cell
+from xl_transform.writer import ExcelDataWriter
 
 
 class ExcelDataFrameWriter(object):
@@ -19,7 +22,9 @@ class ExcelDataFrameWriter(object):
         self.__mapping_name = info_item.mapping_name
         self.__headers = list(info_item.headers)
         self.__header_direction = info_item.header_direction
-        self.__config = config.copy()
+        self.__with_header = True if "with_header" in config and "true" == config["with_header"].lower() else False
+        self.__rows_limit = int(config["rows_limit"]) if "rows_limit" in config else None
+        self.__format = self.parse_format_config(config)
 
     @property
     def sheet_name(self):
@@ -29,22 +34,36 @@ class ExcelDataFrameWriter(object):
     def top_left_point(self):
         return self.__top_left_point
 
-    def write(self, df, target_path):
+    def write(self, df, target):
         """
         Write the given DataFrame into target area.
         :param DataFrame df :
-        :param str target_path:
+        :param str target:
         :return:
         """
-        data_to_write = self.get_data_frame_to_write(df)
+        if os.path.exists(target):
+            wb = openpyxl.load_workbook(target)
+        else:
+            wb = openpyxl.Workbook()
 
-        if self.__sheet_name is not None:
-            data_to_write.to_excel(
-                target_path, sheet_name=self.__sheet_name,
-                header=False, index=False,
-                startrow=self.__top_left_point.x,
-                startcol=self.__top_left_point.y
-            )
+        # do projection
+        header_provided_in_df = df.columns.values
+        for header in self.__headers:
+            if header not in header_provided_in_df:
+                err_msg = "The given data frame not provide the column : " + header
+                raise Exception(err_msg)
+        df_to_write = df[self.__headers]
+
+        ExcelDataWriter.write_data_frame_to_workbook(
+            wb, self.__sheet_name, df_to_write,
+            start_row_idx=self.top_left_point.x + 1,
+            start_col_idx=self.top_left_point.y + 1,
+            data_row_direction=self.__header_direction,
+            with_header=self.__with_header,
+            data_rows_limit=self.__rows_limit,
+            converter=self.__format
+        )
+        wb.save(target)
 
     def get_data_frame_to_write(self, df):
         """
@@ -91,7 +110,7 @@ class ExcelDataFrameWriter(object):
         new_values = {}
         for column_idx in range(0, len(self.__headers)):
             header_name = self.__headers[column_idx]
-            transfer_func = get_type2str_transfer_func(format_dict[header_name]) if header_name in format_dict else None
+            transfer_func = get_value_convert_func(format_dict[header_name]) if header_name in format_dict else None
             new_value_list = []
             for row_idx in range(0, max_row_idx):
                 old_val = df.iloc[row_idx].iloc[column_idx]
@@ -112,16 +131,54 @@ class ExcelDataFrameWriter(object):
         :return:
         :rtype: CellsArea
         """
-        df_to_write = self.get_data_frame_to_write(df)
-        bottom_right_point = Cell(
-            self.top_left_point.x + df_to_write.shape[0],
-            self.top_left_point.y + df_to_write.shape[1]
-        )
+        start_row_idx = self.top_left_point.x
+        start_col_idx = self.top_left_point.y
+        if self.__with_header:
+            if self.__header_direction == row:
+                data_row_idx = start_row_idx + 1
+                data_col_idx = start_col_idx
+            else:
+                data_row_idx = start_row_idx
+                data_col_idx = start_col_idx + 1
+        else:
+            data_row_idx = start_row_idx
+            data_col_idx = start_col_idx
+
+        if self.__rows_limit is not None:
+            num_of_data_rows_to_write = min(self.__rows_limit, df.shape[0])
+        else:
+            num_of_data_rows_to_write = df.shape[0]
+
+        if row == self.__header_direction:
+            bottom_right_point = Cell(
+                data_row_idx + num_of_data_rows_to_write - 1,
+                data_col_idx + len(self.__headers)
+            )
+        else:
+            bottom_right_point = Cell(
+                data_row_idx + len(self.__headers),
+                data_col_idx + num_of_data_rows_to_write - 1
+            )
         return CellsArea(
             self.top_left_point,
             bottom_right_point,
             sheet_name=self.__sheet_name
         )
+
+    def parse_format_config(self, config):
+        if "format" not in config:
+            return None
+        format_config = config["format"]
+        format_dict = {}
+        if "*" in format_config:
+            format_str = format_config["*"]
+            for header in self.__headers:
+                format_dict[header] = format_str
+        format_dict.update({
+            k: v for k, v in format_config.items() if k != "*"
+        })
+        return {header: get_value_convert_func(format_str)
+                for header, format_str in format_dict.items()}
 
 
 class FileWriter(object):
@@ -170,18 +227,10 @@ class FileWriter(object):
         if self.__target_file_type == "excel":
             self.__check_write_area(data_frame_dict)
 
-            with pd.ExcelWriter(target_file_path) as xl_writer:
-                for mapping_name, df in data_frame_dict.items():
-                    if mapping_name in self.__writer_dict:
-                        df_writer = self.__writer_dict[mapping_name]
-                        df_to_write = df_writer.get_data_frame_to_write(df)
-                        df_to_write.to_excel(
-                            xl_writer, sheet_name=df_writer.sheet_name,
-                            header=False, index=False,
-                            startrow=df_writer.top_left_point.x,
-                            startcol=df_writer.top_left_point.y
-                        )
-                xl_writer.save()
+            for mapping_name, df in data_frame_dict.items():
+                if mapping_name in self.__writer_dict:
+                    df_writer = self.__writer_dict[mapping_name]
+                    df_writer.write(df, target_file_path)
         else:
             df_to_write = self.__merge_data_into_single_df(data_frame_dict)
             df_to_write.to_csv(
@@ -213,7 +262,7 @@ class FileWriter(object):
     def __check_write_area(self, data_frame_dict):
         """
 
-        :param DataFrame data_frame_dict:
+        :param dict[str,DataFrame] data_frame_dict:
         :return:
         """
         cells_areas = []

@@ -1,7 +1,7 @@
 import json
 import os
-import time
 import unittest
+from datetime import datetime
 from decimal import Decimal
 from os import path
 
@@ -38,9 +38,9 @@ class TestWrite(unittest.TestCase):
         data_frame = pd.DataFrame({
             "str": ["10", "0.029576325", "0.333226408"],
             "int": ["20", "-10", "0"],
-            "date_1": [time.strptime(str_val, date_format) for str_val in
+            "date_1": [datetime.strptime(str_val, date_format) for str_val in
                        ["2019/01/30 00:00:00", "2019/02/28 16:58:24", "2019/12/30 08:20:47"]],
-            "date_2": [time.strptime(str_val, date_format) for str_val in
+            "date_2": [datetime.strptime(str_val, date_format) for str_val in
                        ["2019/01/30 00:00:00", "2019/02/28 16:58:24", "2019/12/30 08:20:47"]],
             "float": [6.144880061, -1.195569306, 2.847225604],
             "decimal": [Decimal.from_float(x) for x in [6.144880061, -1.195569306, 2.847225604]]
