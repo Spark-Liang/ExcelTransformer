@@ -45,6 +45,7 @@ class Template(object):
     def file_type(self):
         return self.__file_type
 
+
 class TemplateInfoItem(object):
     """
     Each one of the "TemplateInfoItem" represent a single template area. This class contain the below properties to describe the template information.
@@ -161,7 +162,7 @@ def __parse_data_frame(df, sheet_name):
         for y in range(0, max_y):
             cell_value = df.at[x, y]
             if isinstance(cell_value, str):
-                __parse_cell_info_into_dict(
+                __parse_cell_info_and_set_target_into_dict(
                     x, y, cell_value, target_cell_info_dict
                 )
     target_cells = target_cell_info_dict.keys()
@@ -173,7 +174,7 @@ def __parse_data_frame(df, sheet_name):
     )
 
 
-def __parse_cell_info_into_dict(x, y, value, target_cell_info_dict):
+def __parse_cell_info_and_set_target_into_dict(x, y, value, target_cell_info_dict):
     pattern = r"^\s*\$\{([^}]+?)\:([^}]+?)\}\s*$"
     matchObj = re.match(pattern, value)
     if matchObj is None:
@@ -208,10 +209,10 @@ def __check_line_shape_and_construct_parse_result_items(
         for mapping, cells_set_of_mapping in mapping_cells_dict.items():
             line = OrthorhombicLine(cells_set_of_mapping)
             result.append(TemplateInfoItem(
-                sheet_name,
-                line.cells_list[0],
-                mapping,
-                [target_cell_info_dict[cell]["header_name"] for cell in line.cells_list],
-                column if line.is_vertical else row
+                sheet_name=sheet_name,
+                top_left_point=line.cells_list[0],
+                mapping_name=mapping,
+                headers=[target_cell_info_dict[cell]["header_name"] for cell in line.cells_list],
+                header_direction=(column if line.is_vertical else row) if line.is_vertical is not None else None
             ))
     return result

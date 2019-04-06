@@ -41,8 +41,8 @@ def extract_data_frame(
     :param int data_column_limit:
         Restrict the number of column to extract.   <br>
         This parameter need to provide when "import_header" is True.
-    :param converter:
-    :param dtype:
+    :param dict[str,(Cell)->Any] converter:
+    :param dict[str,type] dtype:
     :return:
     :rtype: DataFrame
     """
@@ -59,7 +59,8 @@ def extract_data_frame(
     if header_list is None and not import_header:
         # create auto-gen header
         if data_column_limit is None:
-            err_msg = "The 'data_column_limit' must provided when read data with auto-generated header"
+            err_msg = "The 'data_column_limit' must provided when read_data data with auto-generated header"
+            raise Exception(err_msg)
         header_list = range(0, data_column_limit)
     elif header_list is not None:
         # use the given header
@@ -67,22 +68,22 @@ def extract_data_frame(
     else:
         # import the header from data
         if data_column_limit is None:
-            err_msg = "The 'data_column_limit' must provided when read data with header import"
+            err_msg = "The 'data_column_limit' must provided when read_data data with header import"
             raise Exception(err_msg)
         header_list = extract_header(sheet, start_row_idx, start_col_idx, data_row_direction, data_column_limit)
 
     # prepare data proceed function
-    def data_proceed(header, cell):
+    def data_proceed(header_str, cell):
         """
 
-        :param header:
+        :param header_str:
         :param Cell cell:
         :return:
         """
         if converter is not None:
-            return convert_by_converter(header, cell, converter)
+            return convert_by_converter(header_str, cell, converter)
         if dtype is not None:
-            return convert_by_type_hint(header, cell, dtype)
+            return convert_by_type_hint(header_str, cell, dtype)
         return cell.value
 
     # extract data from excel

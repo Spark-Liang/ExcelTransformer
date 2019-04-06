@@ -27,7 +27,8 @@ def assert_data_frame_with_same_header_and_data(
         for y in range(0, max_y):
             test_case.assertEqual(
                 expected_data_frame.iloc[x].iloc[y],
-                result.iloc[x].iloc[y]
+                result.iloc[x].iloc[y],
+                "value in ({},{}) is not equal".format(x, y)
             )
 
 

@@ -38,4 +38,6 @@ def separate_cells_set_into_contacted_cells_set(cells_set):
                     cells_needed_to_travel.extend(contact_cells_set_of_current_cell - cells_has_traveled)
                     new_contact_cells_set |= contact_cells_set_of_current_cell
             result.append(new_contact_cells_set)
+    # include all un contact cell into result
+    result.extend([{cell} for cell in un_contact_cells_set])
     return result

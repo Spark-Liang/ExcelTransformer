@@ -12,14 +12,17 @@ def transfer(
         data_source_template_path,
         output_template_path,
         output_path,
-        config_path
+        config_path=None
 ):
-    with open(config_path, 'r') as f:
-        config = json.loads("".join(f.readlines()))
+    if config_path is not None:
+        with open(config_path, 'r') as f:
+            config = json.loads("".join(f.readlines()))
+    else:
+        config = None
     reader = FileReader(Template(data_source_template_path), config)
     writer = FileWriter(Template(output_template_path), config)
-    data = reader.read(data_source_path)
-    writer.write(data, output_path)
+    data = reader.read_data(data_source_path)
+    writer.write_data(data, output_path)
 
 
 if __name__ == '__main__':

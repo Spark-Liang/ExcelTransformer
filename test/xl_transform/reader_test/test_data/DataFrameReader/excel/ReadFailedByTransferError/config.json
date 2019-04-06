@@ -1,8 +1,0 @@
-{
-  "skip_header": "true",
-  "type_hints": {
-    "Date_1": "date(%Y/%m/%d %H:%M:%S)",
-    "Date_2": "date(%Y/%m/%d)",
-    "decimal_2": "decimal(2)"
-  }
-}

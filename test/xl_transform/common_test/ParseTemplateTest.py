@@ -120,6 +120,28 @@ class TestParseExcelTemplate(unittest.TestCase):
             )
         )
 
+    def test_header_direction_is_None_when_header_is_single_cell(self):
+        # given
+        template_path = self.get_test_file_path("TemplateWithSingleCell.xlsx")
+
+        # when
+        result = SUT.parse_excel_template(template_path)
+
+        # then
+        expected_items = {
+            TemplateInfoItem(
+                "TestOut", Cell(1, 1),
+                "TBL_1", ["1"], None
+            )
+        }
+        self.assertEqual(
+            expected_items, set(result),
+            "expected_items: {};\nresult: {}".format(
+                MessageUtil.format_collection(expected_items),
+                MessageUtil.format_collection(result)
+            )
+        )
+
 
 # noinspection PyTypeChecker
 class TestParseCSVTemplate(unittest.TestCase):

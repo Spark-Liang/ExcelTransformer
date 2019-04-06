@@ -1,9 +1,10 @@
+import json
 import os
 
 import openpyxl
 from pandas import DataFrame
 
-from xl_transform.common import Template, TemplateInfoItem, row, column
+from xl_transform.common import Template, TemplateInfoItem, row
 from xl_transform.common.ConfigPaseUtils import get_value_convert_func
 from xl_transform.common.model import CellsArea, Cell
 from xl_transform.writer import ExcelDataWriter
@@ -11,7 +12,7 @@ from xl_transform.writer import ExcelDataWriter
 
 class ExcelDataFrameWriter(object):
 
-    def __init__(self, info_item, config):
+    def __init__(self, info_item, config=None):
         """
 
         :param TemplateInfoItem info_item:
@@ -22,9 +23,10 @@ class ExcelDataFrameWriter(object):
         self.__mapping_name = info_item.mapping_name
         self.__headers = list(info_item.headers)
         self.__header_direction = info_item.header_direction
-        self.__with_header = True if "with_header" in config and "true" == config["with_header"].lower() else False
-        self.__rows_limit = int(config["rows_limit"]) if "rows_limit" in config else None
-        self.__format = self.parse_format_config(config)
+        self.__with_header = True if config is not None and "with_header" in config and "true" == config[
+            "with_header"].lower() else False
+        self.__rows_limit = int(config["rows_limit"]) if config is not None and "rows_limit" in config else None
+        self.__format = self.parse_format_config(config) if config is not None else None
 
     @property
     def sheet_name(self):
@@ -64,65 +66,6 @@ class ExcelDataFrameWriter(object):
             converter=self.__format
         )
         wb.save(target)
-
-    def get_data_frame_to_write(self, df):
-        """
-
-        :param DataFrame df:
-        :return:
-        :rtype: DataFrame
-        """
-        unprovided_columns = set(self.__headers) - set(df.columns.values)
-        if 0 != len(unprovided_columns):
-            err_msg = "The given data frame does not provide these columns: " + str(unprovided_columns)
-            raise Exception(err_msg)
-        data_to_write = df[self.__headers]
-        data_to_write = self.__format_data(data_to_write)
-        if "rows_limit" in self.__config:
-            max_row_idx = int(self.__config["rows_limit"]) + 1
-            if max_row_idx < data_to_write.shape[0]:
-                data_to_write = data_to_write.iloc[:max_row_idx]
-
-        if "with_header" in self.__config and "true" == self.__config["with_header"].lower():
-            header_frame = DataFrame(
-                {header: [header_val] for header, header_val in zip(self.__headers, self.__headers)},
-                columns=self.__headers
-            )
-            data_to_write = header_frame.append(data_to_write, ignore_index=True)
-        if column == self.__header_direction:
-            data_to_write = data_to_write.T
-        return data_to_write
-
-    def __format_data(self, df):
-        if "format" not in self.__config:
-            return df
-        format_config = self.__config["format"]
-        format_dict = {}
-        if "*" in format_config:
-            format_str = format_config["*"]
-            for header in self.__headers:
-                format_dict[header] = format_str
-        format_dict.update({
-            k: v for k, v in format_config.items() if k != "*"
-        })
-
-        max_row_idx = df.shape[0]
-        new_values = {}
-        for column_idx in range(0, len(self.__headers)):
-            header_name = self.__headers[column_idx]
-            transfer_func = get_value_convert_func(format_dict[header_name]) if header_name in format_dict else None
-            new_value_list = []
-            for row_idx in range(0, max_row_idx):
-                old_val = df.iloc[row_idx].iloc[column_idx]
-                if (transfer_func is not None
-                        and old_val is not None):
-                    new_value_list.append(transfer_func(old_val))
-                else:
-                    new_value_list.append(old_val)
-            new_values[header_name] = new_value_list
-        return DataFrame(
-            new_values, columns=self.__headers, dtype=str
-        )
 
     def get_write_area(self, df):
         """
@@ -183,7 +126,7 @@ class ExcelDataFrameWriter(object):
 
 class FileWriter(object):
 
-    def __init__(self, template, config):
+    def __init__(self, template, config=None):
         """
 
         :param Template template:
@@ -200,64 +143,31 @@ class FileWriter(object):
                 raise Exception(err_msg)
             info_item_dict[info_item.mapping_name] = info_item
 
-        if self.__target_file_type == "excel":
+        if config is not None and "writers" in config:
             writer_config_dict = config["writers"]
             self.__writer_dict = {
-                mapping_name: ExcelDataFrameWriter(info_item_dict[mapping_name], mapping_writer_config)
-                for mapping_name, mapping_writer_config in writer_config_dict.items()
+                mapping_name: ExcelDataFrameWriter(info_item, writer_config_dict[mapping_name])
+                for mapping_name, info_item in info_item_dict.items()
             }
         else:
-            # in current version, csv file only support horizontal header.
-            for info_item in template_info_items:
-                if info_item.header_direction == column:
-                    err_msg = "In current version, csv file only support horizontal header."
-                    raise Exception(err_msg)
-            writer_config_dict = config["writers"]
             self.__writer_dict = {
-                mapping_name: ExcelDataFrameWriter(info_item_dict[mapping_name], mapping_writer_config)
-                for mapping_name, mapping_writer_config in writer_config_dict.items()
+                mapping_name: ExcelDataFrameWriter(info_item)
+                for mapping_name, info_item in info_item_dict.items()
             }
 
-    def write(self, data_frame_dict, target_file_path):
+    def write_data(self, data_frame_dict, target_file_path):
         """
 
         :param dict[str,DataFrame] data_frame_dict:
+        :param str target_file_path:
         :return:
         """
-        if self.__target_file_type == "excel":
-            self.__check_write_area(data_frame_dict)
+        self.__check_write_area(data_frame_dict)
 
-            for mapping_name, df in data_frame_dict.items():
-                if mapping_name in self.__writer_dict:
-                    df_writer = self.__writer_dict[mapping_name]
-                    df_writer.write(df, target_file_path)
-        else:
-            df_to_write = self.__merge_data_into_single_df(data_frame_dict)
-            df_to_write.to_csv(
-                target_file_path, header=False, index=False,
-            )
-
-    def __merge_data_into_single_df(self, data_frame_dict):
-        write_area_list = []
         for mapping_name, df in data_frame_dict.items():
             if mapping_name in self.__writer_dict:
                 df_writer = self.__writer_dict[mapping_name]
-                write_area_list.append(df_writer.get_write_area(df))
-        max_x = sorted([area.bottom_right_point.x for area in write_area_list], reverse=True)[0]
-        max_y = sorted([area.bottom_right_point.y for area in write_area_list], reverse=True)[0]
-        empty_column = [None for x in range(0, max_x)]
-        data_dict = {y: empty_column.copy() for y in range(0, max_y)}
-        for mapping_name, df in data_frame_dict.items():
-            if mapping_name in self.__writer_dict:
-                df_writer = self.__writer_dict[mapping_name]
-                df_to_write = df_writer.get_data_frame_to_write(df)
-                based_x, based_y = df_writer.top_left_point.x, df_writer.top_left_point.y
-                for dx in range(0, df_to_write.shape[0]):
-                    for dy in range(0, df_to_write.shape[1]):
-                        data_dict[based_y + dy][based_x + dx] = df_to_write.iloc[dx].iloc[dy]
-        return DataFrame(
-            data_dict
-        )
+                df_writer.write(df, target_file_path)
 
     def __check_write_area(self, data_frame_dict):
         """
@@ -277,5 +187,65 @@ class FileWriter(object):
             for j in range(i + 1, max_idx):
                 area_2 = cells_areas[j]
                 if area_1.is_intersect_with(area_2):
-                    err_msg = "The Area about to write will be intersected."
+                    err_msg = "The Area about to write_data will be intersected."
                     raise Exception(err_msg)
+
+    @staticmethod
+    def write(
+            target_path,
+            template_path,
+            data,
+            config_path=None
+    ):
+        """
+
+        :param str target_path: source_path: The path of the target excel file.
+        :param str template_path: The path of the template excel file.
+        :param dict[str,DataFrame] data: The data to write_data.
+        :param str config_path: The path of the configuration file.
+        :return:
+        """
+        parent_dir_of_target = os.path.dirname(target_path)
+        # check target path
+        if not os.path.exists(parent_dir_of_target):
+            err_msg = "The parent folder of the target path does not exists, please create '{}' first.".format(
+                parent_dir_of_target
+            )
+            raise Exception(err_msg)
+        elif not os.path.isdir(parent_dir_of_target):
+            err_msg = "The parent path '{}' is not a folder, please choose other folder.".format(
+                parent_dir_of_target
+            )
+            raise Exception(err_msg)
+
+        # check template path
+        if not os.path.exists(template_path):
+            err_msg = "The given path of the template file does not exists, please check you path: '{}'.".format(
+                template_path
+            )
+            raise Exception(err_msg)
+        elif not os.path.isfile(template_path):
+            err_msg = "The given path of the template file is not a file, please check you path: '{}'.".format(
+                template_path
+            )
+            raise Exception(err_msg)
+        template = Template(template_path)
+
+        # check config path
+        if config_path is not None:
+            if not os.path.exists(config_path):
+                err_msg = "The given path of the config file is not a file, please check you path: '{}'.".format(
+                    template_path
+                )
+                raise Exception(err_msg)
+            elif not os.path.isfile(config_path):
+                err_msg = "The given path of the config file is not a file, please check you path: '{}'.".format(
+                    template_path
+                )
+                raise Exception(err_msg)
+            with open(config_path, 'r') as config_file:
+                config = json.load(config_file)
+        else:
+            config = None
+
+        FileWriter(template, config).write_data(data, target_path)

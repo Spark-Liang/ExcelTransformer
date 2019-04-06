@@ -109,6 +109,7 @@ class Cell(object):
             err_msg = "Only support '0' and '1' as the index"
             raise Exception(err_msg)
 
+
 class OrthorhombicLine(object):
     """
     A object model to describe the shape of a certain cell set.

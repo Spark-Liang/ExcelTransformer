@@ -41,7 +41,7 @@ def write_data_frame_to_workbook(
 
     header_list = df.columns.values
 
-    # write header if need
+    # write_data header if need
     if with_header:
         if data_row_direction == row:
             header_row_idx = start_row_idx
@@ -58,7 +58,7 @@ def write_data_frame_to_workbook(
     else:
         data_rows_limit = df.shape[0]
 
-    # write data
+    # write_data data
     def update_data_func(header_str, cell, val):
         """
 
