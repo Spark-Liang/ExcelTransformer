@@ -96,7 +96,7 @@ class OutputRedirector(object):
         self.fp = fp
 
     def write(self, s):
-        self.fp.write_data(s)
+        self.fp.write(s)
 
     def writelines(self, lines):
         self.fp.writelines(lines)
@@ -254,11 +254,11 @@ function showOutput(id, name) {
                     name,
                     "resizable,scrollbars,status,width=800,height=450");
     d = w.document;
-    d.write_data("<pre>");
-    d.write_data(html_escape(output_list[id]));
-    d.write_data("\n");
-    d.write_data("<a href='javascript:window.close()'>close</a>\n");
-    d.write_data("</pre>\n");
+    d.write("<pre>");
+    d.write(html_escape(output_list[id]));
+    d.write("\n");
+    d.write("<a href='javascript:window.close()'>close</a>\n");
+    d.write("</pre>\n");
     d.close();
 }
 */
@@ -597,11 +597,11 @@ class _TestResult(TestResult):
         output = self.complete_output()
         self.result.append((0, test, output, ''))
         if self.verbosity > 1:
-            sys.stderr.write_data('ok ')
-            sys.stderr.write_data(str(test))
-            sys.stderr.write_data('\n')
+            sys.stderr.write('ok ')
+            sys.stderr.write(str(test))
+            sys.stderr.write('\n')
         else:
-            sys.stderr.write_data('.' + str(self.success_count))
+            sys.stderr.write('.' + str(self.success_count))
 
     def addError(self, test, err):
         self.error_count += 1
@@ -610,11 +610,11 @@ class _TestResult(TestResult):
         output = self.complete_output()
         self.result.append((2, test, output, _exc_str))
         if self.verbosity > 1:
-            sys.stderr.write_data('E  ')
-            sys.stderr.write_data(str(test))
-            sys.stderr.write_data('\n')
+            sys.stderr.write('E  ')
+            sys.stderr.write(str(test))
+            sys.stderr.write('\n')
         else:
-            sys.stderr.write_data('E')
+            sys.stderr.write('E')
 
     def addFailure(self, test, err):
         self.failure_count += 1
@@ -623,11 +623,11 @@ class _TestResult(TestResult):
         output = self.complete_output()
         self.result.append((1, test, output, _exc_str))
         if self.verbosity > 1:
-            sys.stderr.write_data('F  ')
-            sys.stderr.write_data(str(test))
-            sys.stderr.write_data('\n')
+            sys.stderr.write('F  ')
+            sys.stderr.write(str(test))
+            sys.stderr.write('\n')
         else:
-            sys.stderr.write_data('F')
+            sys.stderr.write('F')
 
 
 class HTMLTestRunner(Template_mixin):
@@ -709,7 +709,7 @@ class HTMLTestRunner(Template_mixin):
             ending=ending,
             chart_script=chart,
         )
-        self.stream.write_data(output.encode('utf8'))
+        self.stream.write(output.encode('utf8'))
 
     def _generate_stylesheet(self):
         return self.STYLESHEET_TMPL
@@ -833,6 +833,7 @@ class HTMLTestRunner(Template_mixin):
 # Note: Reuse unittest.TestProgram to launch test. In the future we may
 # build our own launcher to support more specific command line
 # parameters like test title, CSS, etc.
+# noinspection PyUnresolvedReferences
 class TestProgram(unittest.TestProgram):
     """
     A variation of the unittest.TestProgram. Please refer to the base

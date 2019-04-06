@@ -112,7 +112,11 @@ def extract_data_frame(
                 return ind
         return 0
 
-    last_not_all_null_row_idx = max(*[get_last_not_null_value_idx(l) for l in data_dict.values()])
+    value_list_in_data_dict = list(data_dict.values())
+    if len(value_list_in_data_dict) == 1:
+        last_not_all_null_row_idx = get_last_not_null_value_idx(value_list_in_data_dict.pop())
+    else:
+        last_not_all_null_row_idx = max(*[get_last_not_null_value_idx(l) for l in value_list_in_data_dict])
     if data_rows_limit is not None and data_rows_limit < last_not_all_null_row_idx:
         row_idx_to_trim = data_rows_limit
     else:

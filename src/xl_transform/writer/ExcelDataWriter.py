@@ -62,13 +62,13 @@ def write_data_frame_to_workbook(
     def update_data_func(header_str, cell, val):
         """
 
-        :param Any val:
         :param header_str:
         :param Cell cell:
+        :param Any val:
         :return:
         """
         if converter is not None:
-            cell.value = convert_by_converter(header_str, val, converter)
+            convert_by_converter(header_str, cell, val, converter)
             return
         if dtype is not None:
             cell.value = convert_by_type_hint(header_str, val, dtype)
@@ -113,16 +113,17 @@ def convert_by_type_hint(header, value, dtype):
     return value
 
 
-def convert_by_converter(header, value, converter):
+def convert_by_converter(header, cell, value, converter):
     """
 
         :param str header:
+        :param Cell cell:
         :param Any value:
-        :param dict[str,(Cell)->Any] converter:
+        :param dict[str,(Cell,value)->None] converter:
         :return:
         """
     if header in converter:
         converter_func = converter[header]
         if converter_func is not None:
-            return converter_func(value)
-    return value
+            return converter_func(cell, value)
+    cell.value = value

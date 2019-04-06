@@ -7,7 +7,7 @@ class CellsAreaTest(unittest.TestCase):
 
     def test_return_false_when_two_area_not_intersect(self):
         # given
-        a, b = CellsArea((0, 0), (2, 3), "A"), CellsArea((3, 4), (4, 5), "A")
+        a, b = CellsArea((1, 1), (3, 4), "A"), CellsArea((4, 5), (5, 6), "A")
 
         # when
         result1, result2 = a.is_intersect_with(b), b.is_intersect_with(a)
@@ -27,7 +27,7 @@ class CellsAreaTest(unittest.TestCase):
 
         """
         # given
-        a, b = CellsArea((0, 0), (2, 3), "A"), CellsArea((3, 0), (4, 3), "A")
+        a, b = CellsArea((1, 1), (3, 4), "A"), CellsArea((4, 1), (5, 4), "A")
 
         # when
         result1, result2 = a.is_intersect_with(b), b.is_intersect_with(a)
@@ -51,7 +51,7 @@ class CellsAreaTest(unittest.TestCase):
            #####
         """
         # given
-        a, b = CellsArea((0, 0), (2, 3), "A"), CellsArea((0, 4), (2, 7), "A")
+        a, b = CellsArea((1, 1), (3, 4), "A"), CellsArea((1, 5), (3, 8), "A")
 
         # when
         result1, result2 = a.is_intersect_with(b), b.is_intersect_with(a)
@@ -62,7 +62,7 @@ class CellsAreaTest(unittest.TestCase):
 
     def test_return_false_when_two_area_not_in_same_sheet(self):
         # given
-        a, b = CellsArea((0, 0), (2, 3), "A"), CellsArea((0, 0), (2, 3), "B")
+        a, b = CellsArea((1, 1), (3, 4), "A"), CellsArea((1, 1), (3, 4), "B")
 
         # when
         result1, result2 = a.is_intersect_with(b), b.is_intersect_with(a)
@@ -85,7 +85,7 @@ class CellsAreaTest(unittest.TestCase):
 
         """
         # given
-        a, b = CellsArea((0, 0), (3, 3), "A"), CellsArea((2, 2), (5, 5), "A")
+        a, b = CellsArea((1, 1), (4, 4), "A"), CellsArea((3, 3), (6, 6), "A")
 
         # when
         result1, result2 = a.is_intersect_with(b), b.is_intersect_with(a)
@@ -108,7 +108,7 @@ class CellsAreaTest(unittest.TestCase):
 
         """
         # given
-        a, b = CellsArea((3, 0), (5, 5), "A"), CellsArea((0, 2), (5, 4), "A")
+        a, b = CellsArea((4, 1), (6, 6), "A"), CellsArea((1, 3), (6, 5), "A")
 
         # when
         result1, result2 = a.is_intersect_with(b), b.is_intersect_with(a)
@@ -133,7 +133,7 @@ class CellsAreaTest(unittest.TestCase):
 
         """
         # given
-        a, b = CellsArea((0, 0), (5, 5), "A"), CellsArea((2, 2), (4, 4), "A")
+        a, b = CellsArea((1, 1), (6, 6), "A"), CellsArea((3, 3), (5, 5), "A")
 
         # when
         result1, result2 = a.is_intersect_with(b), b.is_intersect_with(a)

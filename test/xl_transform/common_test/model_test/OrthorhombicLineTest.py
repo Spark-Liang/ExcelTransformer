@@ -73,11 +73,11 @@ class OrthorhombicLineTest(unittest.TestCase):
         """
         The shape of the cells is like the below graph.
 
-          0 1 2 3
-        0 #
-        1   #
-        2
+          1 2 3 4
+        1 #
+        2   #
         3
+        4
 
         :return:
         """
@@ -95,11 +95,11 @@ class OrthorhombicLineTest(unittest.TestCase):
         """
         The shape of the cells is like the below graph.
 
-          0 1 2 3
-        0 #
-        1 ###
-        2
+          1 2 3 4
+        1 #
+        2 ###
         3
+        4
 
         :return:
         """

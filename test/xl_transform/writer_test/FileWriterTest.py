@@ -2,6 +2,7 @@ import os
 import unittest
 from os import path
 
+import openpyxl
 import pandas as pd
 
 from test_util.DataFrameAssertUtil import assert_data_in_excel_is_equal
@@ -18,10 +19,20 @@ class TestWrite(unittest.TestCase):
             os.remove(self.__test_target_path)
             self.__test_target_path = None
 
-    def test_write_with_horizontal_and_vertical_mapping(self):
+    def test_write_with_horizontal_and_vertical_mapping_and_with_projection(self):
         # given
-        test_name = "WriteHorizontalAndVerticalMapping"
-        self.write_and_check_data(test_name)
+        test_name = "WriteHorizontalAndVerticalMappingAndWithProjection"
+        self.__test_target_path = get_test_target_file_path(test_name)
+        template_path = get_test_template_path(test_name)
+        data_frame_dict = get_test_data(test_name)
+
+        # when
+        SUT.write(
+            self.__test_target_path,
+            template_path,
+            data_frame_dict,
+            None
+        )
 
         # then
         self.assert_expected_equal_to_result(test_name)
@@ -29,13 +40,6 @@ class TestWrite(unittest.TestCase):
     def test_write_data_to_two_sheet(self):
         # given
         test_name = "WriteDataIntoTwoSheet"
-        self.write_and_check_data(test_name)
-
-        # then
-        self.assert_expected_equal_to_result(test_name)
-
-    def write_and_check_data(self, test_name):
-        config_path = get_writer_config_path(test_name)
         self.__test_target_path = get_test_target_file_path(test_name)
         template_path = get_test_template_path(test_name)
         data_frame_dict = get_test_data(test_name)
@@ -44,8 +48,11 @@ class TestWrite(unittest.TestCase):
             self.__test_target_path,
             template_path,
             data_frame_dict,
-            config_path
+            None
         )
+
+        # then
+        self.assert_expected_equal_to_result(test_name)
 
     def test_raise_exception_when_area_to_write_is_contacted(self):
         # given
@@ -87,9 +94,18 @@ def get_test_data(test_name):
     file_path = path.join(
         get_test_data_prefix(test_name), "Data.xlsx"
     )
-    return pd.read_excel(
-        file_path, sheet_name=None
-    )
+    wb = openpyxl.load_workbook(file_path, read_only=True)
+    result = {}
+    for sheet in wb:
+        mapping_name = sheet.title
+        # read value by column
+        value_dict = {}
+        for y in range(1, sheet.max_column + 1):
+            header = sheet.cell(1, y).value
+            value_list = [sheet.cell(x, y).value for x in range(2, sheet.max_row + 1)]
+            value_dict[header] = value_list
+        result[mapping_name] = pd.DataFrame(value_dict)
+    return result
 
 
 def get_test_template_path(test_name):

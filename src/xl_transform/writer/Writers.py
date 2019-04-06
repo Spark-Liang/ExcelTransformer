@@ -5,26 +5,28 @@ import openpyxl
 from pandas import DataFrame
 
 from xl_transform.common import Template, TemplateInfoItem, row
-from xl_transform.common.ConfigPaseUtils import get_value_convert_func
+from xl_transform.common.ConfigPaseUtils import get_format_func
 from xl_transform.common.model import CellsArea, Cell
 from xl_transform.writer import ExcelDataWriter
 
 
+# noinspection PyUnresolvedReferences,PyTypeChecker
 class ExcelDataFrameWriter(object):
 
     def __init__(self, info_item, config=None):
         """
 
         :param TemplateInfoItem info_item:
-        :param dict[str,object] config:
+        :param None or dict[str,object] config:
         """
         self.__sheet_name = info_item.sheet_name
         self.__top_left_point = info_item.top_left_point
         self.__mapping_name = info_item.mapping_name
         self.__headers = list(info_item.headers)
         self.__header_direction = info_item.header_direction
-        self.__with_header = True if config is not None and "with_header" in config and "true" == config[
-            "with_header"].lower() else False
+        # the default value of "skip_header" is False
+        self.__skip_header = True if config is not None and "skip_header" in config and "true" == config[
+            "skip_header"].lower() else False
         self.__rows_limit = int(config["rows_limit"]) if config is not None and "rows_limit" in config else None
         self.__format = self.parse_format_config(config) if config is not None else None
 
@@ -58,10 +60,10 @@ class ExcelDataFrameWriter(object):
 
         ExcelDataWriter.write_data_frame_to_workbook(
             wb, self.__sheet_name, df_to_write,
-            start_row_idx=self.top_left_point.x + 1,
-            start_col_idx=self.top_left_point.y + 1,
+            start_row_idx=self.top_left_point.x,
+            start_col_idx=self.top_left_point.y,
             data_row_direction=self.__header_direction,
-            with_header=self.__with_header,
+            with_header=(not self.__skip_header),
             data_rows_limit=self.__rows_limit,
             converter=self.__format
         )
@@ -76,7 +78,7 @@ class ExcelDataFrameWriter(object):
         """
         start_row_idx = self.top_left_point.x
         start_col_idx = self.top_left_point.y
-        if self.__with_header:
+        if not self.__skip_header:
             if self.__header_direction == row:
                 data_row_idx = start_row_idx + 1
                 data_col_idx = start_col_idx
@@ -120,7 +122,7 @@ class ExcelDataFrameWriter(object):
         format_dict.update({
             k: v for k, v in format_config.items() if k != "*"
         })
-        return {header: get_value_convert_func(format_str)
+        return {header: get_format_func(format_str)
                 for header, format_str in format_dict.items()}
 
 
@@ -133,8 +135,6 @@ class FileWriter(object):
         :param dict[str,dict[str,object]] config:
         """
         template_info_items = template.info_items
-
-        self.__target_file_type = template.file_type
 
         info_item_dict = {}
         for info_item in template_info_items:
@@ -202,7 +202,7 @@ class FileWriter(object):
         :param str target_path: source_path: The path of the target excel file.
         :param str template_path: The path of the template excel file.
         :param dict[str,DataFrame] data: The data to write_data.
-        :param str config_path: The path of the configuration file.
+        :param None or str config_path: The path of the configuration file.
         :return:
         """
         parent_dir_of_target = os.path.dirname(target_path)

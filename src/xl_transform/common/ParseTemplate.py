@@ -1,6 +1,7 @@
 import re
 
-import pandas as pd
+import openpyxl
+from openpyxl.worksheet.worksheet import Worksheet
 
 from xl_transform.common import CellsSetUtils
 from xl_transform.common.model import Cell
@@ -14,36 +15,19 @@ row, column = "row", "column"
 
 class Template(object):
 
-    def __init__(self, template_file_path, file_type_hint=None):
+    def __init__(self, template_file_path):
         """
 
         :param str template_file_path:
-        :param str file_type_hint: directly to restrict the file type,
-            otherwise the program will detect the type by filename extension. \n
-            Currently support "excel" or "csv".
         """
-        file_type = file_type_hint
-        if file_type is None:
-            if template_file_path.endswith(".csv"):
-                self.__file_type = "csv"
-            elif template_file_path.endswith(".xlsx"):
-                self.__file_type = "excel"
-            else:
-                err_msg = "Unsupported type of file: " + template_file_path
-                raise Exception(err_msg)
-
-        if self.__file_type == "csv":
-            self.__info_items = parse_csv_template(template_file_path)
-        else:
-            self.__info_items = parse_excel_template(template_file_path)
+        if not template_file_path.endswith(".xlsx"):
+            err_msg = "Unsupported type of file: " + template_file_path
+            raise Exception(err_msg)
+        self.__info_items = parse_excel_template(template_file_path)
 
     @property
     def info_items(self):
         return list(self.__info_items)
-
-    @property
-    def file_type(self):
-        return self.__file_type
 
 
 class TemplateInfoItem(object):
@@ -80,7 +64,7 @@ class TemplateInfoItem(object):
         :param Cell top_left_point:
         :param str mapping_name:
         :param list[str] headers:
-        :param str header_direction: "row" or "column".
+        :param None or str header_direction: "row" or "column".
         """
         self.__sheet_name = sheet_name
         self.__top_left_point = top_left_point
@@ -134,33 +118,25 @@ def parse_excel_template(filename):
     """
     result = []
 
-    df_dict = pd.read_excel(filename, sheet_name=None, header=None)
-    for sheet_name, df in df_dict.items():
+    wb = openpyxl.load_workbook(filename, read_only=True)
+    for sheet in wb:
         result.extend(
-            __parse_data_frame(df, sheet_name)
+            __parse_work_sheet(sheet)
         )
     return result
 
 
-def parse_csv_template(filename):
+def __parse_work_sheet(sheet):
     """
 
-    :param str filename:
+    :param Worksheet sheet:
     :return:
-    :rtype: list[TemplateInfoItem]
     """
-    return __parse_data_frame(
-        pd.read_csv(filename, header=None),
-        None
-    )
-
-
-def __parse_data_frame(df, sheet_name):
-    max_x, max_y = df.shape
+    max_x, max_y = sheet.max_row, sheet.max_column
     target_cell_info_dict = {}
-    for x in range(0, max_x):
-        for y in range(0, max_y):
-            cell_value = df.at[x, y]
+    for x in range(1, max_x + 1):
+        for y in range(1, max_y + 1):
+            cell_value = sheet.cell(x, y).value
             if isinstance(cell_value, str):
                 __parse_cell_info_and_set_target_into_dict(
                     x, y, cell_value, target_cell_info_dict
@@ -170,7 +146,7 @@ def __parse_data_frame(df, sheet_name):
         CellsSetUtils.separate_cells_set_into_contacted_cells_set(target_cells)
     # check if all the shape of the contacted cells are orthorhombic line.
     return __check_line_shape_and_construct_parse_result_items(
-        sheet_name, list_of_contact_cells_set, target_cell_info_dict
+        sheet.title, list_of_contact_cells_set, target_cell_info_dict
     )
 
 

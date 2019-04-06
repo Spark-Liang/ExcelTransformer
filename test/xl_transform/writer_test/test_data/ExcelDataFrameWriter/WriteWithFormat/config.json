@@ -1,0 +1,8 @@
+{
+  "format": {
+    "str": "str({:.2f})",
+    "date_1": "date(%Y/%m/%d %H:%M:%S)",
+    "date_2": "date(%Y/%m/%d)",
+    "decimal": "decimal(2)"
+  }
+}

@@ -22,7 +22,7 @@ class TestReadExcel(unittest.TestCase):
         source_path = get_test_data_source_path(test_name)
         config = read_reader_config(test_name)
         info_item = TemplateInfoItem(
-            "Data", Cell(2, 2), "TBL_1",
+            "Data", Cell(3, 3), "TBL_1",
             ["A", "B", "C", "D"], row
         )
         sut = SUT(info_item, config)
@@ -43,7 +43,7 @@ class TestReadExcel(unittest.TestCase):
         source_path = get_test_data_source_path(test_name)
         config = read_reader_config(test_name)
         info_item = TemplateInfoItem(
-            "Data", Cell(2, 2), "TBL_1",
+            "Data", Cell(3, 3), "TBL_1",
             ["A", "B", "C", "D"], row
         )
         sut = SUT(info_item, config)
@@ -64,7 +64,7 @@ class TestReadExcel(unittest.TestCase):
         source_path = get_test_data_source_path(test_name)
         config = read_reader_config(test_name)
         info_item = TemplateInfoItem(
-            "Data", Cell(2, 2), "TBL_1",
+            "Data", Cell(3, 3), "TBL_1",
             ["A", "B", "C", "D"], column
         )
         sut = SUT(info_item, config)
@@ -85,7 +85,7 @@ class TestReadExcel(unittest.TestCase):
         source_path = get_test_data_source_path(test_name)
         config = read_reader_config(test_name)
         info_item = TemplateInfoItem(
-            "Data", Cell(2, 2), "TBL_1",
+            "Data", Cell(3, 3), "TBL_1",
             ["_", "_", "_", "_"], row
         )
         sut = SUT(info_item, config)
@@ -106,7 +106,7 @@ class TestReadExcel(unittest.TestCase):
         source_path = get_test_data_source_path(test_name)
         config = read_reader_config(test_name)
         info_item = TemplateInfoItem(
-            "Data", Cell(2, 2), "TBL_1",
+            "Data", Cell(3, 3), "TBL_1",
             ["A", "B", "C", "D"], row
         )
         sut = SUT(info_item, config)
@@ -120,35 +120,13 @@ class TestReadExcel(unittest.TestCase):
             self, expected_data_frame, result[1]
         )
 
-    def assert_data_frame_with_same_header_and_data(
-            self, expected_data_frame, result
-    ):
-        """
-
-        :param DataFrame expected_data_frame:
-        :param DataFrame result:
-        :return:
-        """
-        self.assertEqual(
-            expected_data_frame.shape, result.shape
-        )
-        for expected_header, result_header in zip(expected_data_frame.columns.values, result.columns.values):
-            self.assertEqual(expected_header, result_header)
-        max_x, max_y = expected_data_frame.shape
-        for x in range(0, max_x):
-            for y in range(0, max_y):
-                self.assertEqual(
-                    expected_data_frame.iloc[x, y],
-                    result.iloc[x, y]
-                )
-
     def test_read_with_type_hint(self):
         # given
         test_name = "ReadWithTypeHint"
         source_path = get_test_data_source_path(test_name)
         config = read_reader_config(test_name)
         info_item = TemplateInfoItem(
-            "Data", Cell(0, 0), "TBL_1",
+            "Data", Cell(1, 1), "TBL_1",
             ["Date_1", "Date_2", "decimal_2"], row
         )
         sut = SUT(info_item, config)
@@ -177,7 +155,7 @@ class TestReadExcel(unittest.TestCase):
         source_path = get_test_data_source_path(test_name)
         config = read_reader_config(test_name)
         info_item = TemplateInfoItem(
-            "Data", Cell(0, 0), "TBL_1",
+            "Data", Cell(1, 1), "TBL_1",
             ["Date_1", "Date_2", "decimal_2"], row
         )
         sut = SUT(info_item, config)
@@ -187,6 +165,28 @@ class TestReadExcel(unittest.TestCase):
             sut.read(source_path)
 
         self.assertRaises(Exception, when)
+
+    def assert_data_frame_with_same_header_and_data(
+            self, expected_data_frame, result
+    ):
+        """
+
+        :param DataFrame expected_data_frame:
+        :param DataFrame result:
+        :return:
+        """
+        self.assertEqual(
+            expected_data_frame.shape, result.shape
+        )
+        for expected_header, result_header in zip(expected_data_frame.columns.values, result.columns.values):
+            self.assertEqual(expected_header, result_header)
+        max_x, max_y = expected_data_frame.shape
+        for x in range(0, max_x):
+            for y in range(0, max_y):
+                self.assertEqual(
+                    expected_data_frame.iloc[x, y],
+                    result.iloc[x, y]
+                )
 
 
 def get_test_data_prefix(test_name):
@@ -205,7 +205,6 @@ def get_test_data_source_path(testname):
 def read_expected_result(test_name):
     """
 
-    :param file_type:
     :param test_name:
     :return:
     """

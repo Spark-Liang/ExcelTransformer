@@ -1,0 +1,16 @@
+{
+  "writers": {
+    "TBL_1": {
+      "with_header": "true",
+      "format": {
+        "*": "decimal(2)"
+      }
+    },
+    "TBL_2": {
+      "with_header": "true",
+      "format": {
+        "*": "decimal(2)"
+      }
+    }
+  }
+}

@@ -14,7 +14,7 @@ class CellTest(unittest.TestCase):
 
     def test_return_true_when_contact_in_the_same_column(self):
         # given
-        a, b = Cell(1, 1), Cell(2, 1)
+        a, b = Cell(2, 2), Cell(3, 2)
 
         # then
         self.assert_mutually_contact(a, b)

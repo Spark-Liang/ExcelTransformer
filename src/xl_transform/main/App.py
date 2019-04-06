@@ -1,8 +1,6 @@
 import getopt
-import json
 import sys
 
-from xl_transform.common import Template
 from xl_transform.reader import FileReader
 from xl_transform.writer import FileWriter
 
@@ -14,15 +12,16 @@ def transfer(
         output_path,
         config_path=None
 ):
-    if config_path is not None:
-        with open(config_path, 'r') as f:
-            config = json.loads("".join(f.readlines()))
-    else:
-        config = None
-    reader = FileReader(Template(data_source_template_path), config)
-    writer = FileWriter(Template(output_template_path), config)
-    data = reader.read_data(data_source_path)
-    writer.write_data(data, output_path)
+    FileWriter.write(
+        output_path,
+        output_template_path,
+        FileReader.read(
+            data_source_path,
+            data_source_template_path,
+            config_path
+        ),
+        config_path
+    )
 
 
 if __name__ == '__main__':
@@ -55,13 +54,11 @@ if __name__ == '__main__':
         raise Exception('please provide source template file path via option "--source-template"\n' + usageStr)
     if "target-template" not in opts_dict:
         raise Exception('please provide target template file path via option "--target-template"\n' + usageStr)
-    if "conf" not in opts_dict:
-        raise Exception('please provide control file path via option "--conf"\n' + usageStr)
 
     transfer(
         data_source_path=opts_dict["s"] if "s" in opts_dict else opts_dict["source"],
         data_source_template_path=opts_dict["source-template"],
         output_template_path=opts_dict["target-template"],
         output_path=opts_dict["t"] if "t" in opts_dict else opts_dict["target"],
-        config_path=opts_dict["conf"]
+        config_path=opts_dict["conf"] if "conf" in opts_dict else None
     )

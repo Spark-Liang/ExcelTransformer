@@ -55,6 +55,17 @@ class CellsArea(object):
 class Cell(object):
 
     def __init__(self, x, y):
+        """
+
+        :param int x: Row index of the cell. The index starts with 1.
+        :param int y: Column index of the cell.The index starts with 1.
+        """
+        if x < 1:
+            err_msg = "The row index of cell must greater than or equal to 1. Current is {}".format(x)
+            raise Exception(err_msg)
+        if y < 1:
+            err_msg = "The column index of cell must greater than or equal to 1. Current is {}".format(y)
+            raise Exception(err_msg)
         self.__x = x
         self.__y = y
 

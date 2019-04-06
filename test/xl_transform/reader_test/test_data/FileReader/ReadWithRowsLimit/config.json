@@ -1,0 +1,10 @@
+{
+  "readers": {
+    "TBL_1": {
+      "rows_limit": "5"
+    },
+    "TBL_2": {
+      "rows_limit": "5"
+    }
+  }
+}

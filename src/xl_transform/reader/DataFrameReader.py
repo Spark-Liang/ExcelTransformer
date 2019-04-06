@@ -6,6 +6,7 @@ from xl_transform.common.ConfigPaseUtils import get_cell_value_convert_func
 from xl_transform.reader import ExcelDataExtractor
 
 
+# noinspection PyTypeChecker,PyUnresolvedReferences
 class DataFrameReader(object):
 
     def __init__(self, info_item, config=None):
@@ -47,24 +48,25 @@ class DataFrameReader(object):
             if "_" in self.__headers:
                 headers = ExcelDataExtractor.extract_header(
                     wb[self.__sheet_name],
-                    start_row_idx=self.__top_left_point.x + 1,
-                    start_col_idx=self.__top_left_point.y + 1,
+                    start_row_idx=self.__top_left_point.x,
+                    start_col_idx=self.__top_left_point.y,
                     header_row_direction=self.__header_direction,
                     data_column_limit=len(self.__headers)
                 )
             else:
                 headers = self.__headers
 
+            # calculate start position
             if self.__skip_header:
                 if self.__header_direction == row:
-                    start_row_idx = self.__top_left_point.x + 2
-                    start_col_idx = self.__top_left_point.y + 1
-                else:
                     start_row_idx = self.__top_left_point.x + 1
-                    start_col_idx = self.__top_left_point.y + 2
+                    start_col_idx = self.__top_left_point.y
+                else:
+                    start_row_idx = self.__top_left_point.x
+                    start_col_idx = self.__top_left_point.y + 1
             else:
-                start_row_idx = self.__top_left_point.x + 1
-                start_col_idx = self.__top_left_point.y + 1
+                start_row_idx = self.__top_left_point.x
+                start_col_idx = self.__top_left_point.y
 
             return self.__mapping_name, ExcelDataExtractor.extract_data_frame(
                 wb, self.__sheet_name,

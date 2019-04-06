@@ -3,6 +3,7 @@ from unittest import TestCase
 
 import openpyxl
 import pandas as pd
+from openpyxl.cell.cell import Cell
 from openpyxl.worksheet.worksheet import Worksheet
 from pandas import DataFrame
 
@@ -33,14 +34,15 @@ def assert_data_frame_with_same_header_and_data(
 
 
 def assert_data_in_excel_is_equal(
-        test_case, expected_file_path, result_file_path, sheet_name=None
+        test_case, expected_file_path, result_file_path, sheet_name=None, assert_func=None
 ):
     """
 
     :param TestCase test_case:
     :param str expected_file_path:
     :param str result_file_path:
-    :param str sheet_name: 
+    :param str sheet_name:
+    :param (TestCase,Cell,Cell)->None assert_func:
     :return:
     """
     expected_wb = openpyxl.load_workbook(expected_file_path)
@@ -50,7 +52,7 @@ def assert_data_in_excel_is_equal(
     if sheet_name is not None:
         test_case.assertTrue(sheet_name in result_wb)
         assert_data_in_sheet_is_equal(
-            test_case, expected_wb[sheet_name], result_wb[sheet_name]
+            test_case, expected_wb[sheet_name], result_wb[sheet_name], assert_func
         )
         return
 
@@ -58,7 +60,7 @@ def assert_data_in_excel_is_equal(
         test_case.assertTrue(sheet_name in result_wb)
         expected_sheet = expected_wb[sheet_name]
         result_sheet = result_wb[sheet_name]
-        assert_data_in_sheet_is_equal(test_case, expected_sheet, result_sheet)
+        assert_data_in_sheet_is_equal(test_case, expected_sheet, result_sheet, assert_func)
 
 
 def assert_data_in_sheet_is_equal(test_case, expected_sheet, result_sheet, assert_func=None):
@@ -67,27 +69,12 @@ def assert_data_in_sheet_is_equal(test_case, expected_sheet, result_sheet, asser
     :param test_case:
     :param Worksheet expected_sheet:
     :param Worksheet result_sheet:
-    :param (TestCase,Any,Any)->None assert_func:
+    :param (TestCase,Cell,Cell)->None assert_func:
     :return:
     """
 
-    def __default_assert_func(test_case_in_func, expected_val, actual_val):
-        if isinstance(expected_val, str):
-            if expected_val.isnumeric() or expected_val.isnumeric():
-                test_case_in_func.assertEqual(
-                    Decimal(expected_val), Decimal(actual_val)
-                )
-        elif isinstance(expected_val, (int, Decimal)):
-            test_case_in_func.assertEqual(
-                Decimal(expected_val), Decimal(actual_val)
-            )
-        elif isinstance(expected_val, float):
-            test_case_in_func.assertAlmostEqual(float(expected_val), float(actual_val))
-        else:
-            test_case_in_func.assertEqual(expected_val, actual_val)
-
     if assert_func is None:
-        assert_func = __default_assert_func
+        assert_func = assert_value_in_cell_is_equal
 
     test_case.assertEqual(expected_sheet.max_row, result_sheet.max_row)
     test_case.assertEqual(expected_sheet.max_column, result_sheet.max_column)
@@ -96,9 +83,37 @@ def assert_data_in_sheet_is_equal(test_case, expected_sheet, result_sheet, asser
         for y in range(1, expected_sheet.max_column):
             assert_func(
                 test_case,
-                expected_sheet.cell(x, y).value,
-                result_sheet.cell(x, y).value
+                expected_sheet.cell(x, y),
+                result_sheet.cell(x, y)
             )
+
+
+def assert_value_in_cell_is_equal(test_case, expected_cell, actual_cell):
+    """
+
+    :param TestCase test_case:
+    :param Cell expected_cell:
+    :param Cell actual_cell:
+    :return:
+    """
+    expected_val = expected_cell.value
+    actual_val = actual_cell.value
+    if isinstance(expected_val, str):
+        if expected_val.isnumeric() or expected_val.isnumeric():
+            test_case.assertEqual(
+                Decimal(expected_val), Decimal(actual_val)
+            )
+    elif isinstance(expected_val, (int, Decimal)):
+        test_case.assertEqual(
+            Decimal(expected_val), Decimal(actual_val)
+        )
+    elif isinstance(expected_val, float):
+        test_case.assertAlmostEqual(float(expected_val), float(actual_val))
+    else:
+        test_case.assertEqual(
+            expected_val, actual_val,
+            "value in cell ({}.{}) is not equal".format(expected_cell.row, expected_cell.column)
+        )
 
 
 def assert_data_in_data_frame_is_equal(test_case, expected_df, result_df, assert_func=None):

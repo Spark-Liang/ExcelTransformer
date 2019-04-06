@@ -10,24 +10,24 @@ class Test_method_separate_cells_set_into_cells_area(unittest.TestCase):
         """
         The cells location showed in below graph.
 
-          0 1 2 3 4 5 6 7
-        0######
-        1         #####
-        2   #     #
+          1 2 3 4 5 6 7 8
+        1######
+        2         #####
         3   #     #
-        4   #
-        5      ######
+        4   #     #
+        5   #
         6      ######
         7      ######
+        8      ######
 
         :return:
         """
         # given
 
-        set_for_horizontal_line = {Cell(x, y) for x, y in [(0, 0), (0, 1), (0, 2)]}
-        set_for_vertical_line = {Cell(x, y) for x, y in [(2, 1), (3, 1), (4, 1)]}
-        set_for_L_shape_line = {Cell(x, y) for x, y in [(3, 4), (2, 4), (1, 4), (1, 5), (1, 6)]}
-        set_for_rectangle_shape_area = {Cell(x, y) for x in range(5, 8) for y in range(3, 6)}
+        set_for_horizontal_line = {Cell(x, y) for x, y in [(1, 1), (1, 2), (1, 3)]}
+        set_for_vertical_line = {Cell(x, y) for x, y in [(3, 2), (4, 2), (5, 2)]}
+        set_for_L_shape_line = {Cell(x, y) for x, y in [(4, 5), (3, 5), (2, 5), (2, 6), (2, 7)]}
+        set_for_rectangle_shape_area = {Cell(x, y) for x in range(6, 9) for y in range(4, 7)}
         expected_cells_set_list = [set_for_horizontal_line, set_for_vertical_line, set_for_L_shape_line,
                                    set_for_rectangle_shape_area]
         cells_set = set()
@@ -46,21 +46,21 @@ class Test_method_separate_cells_set_into_cells_area(unittest.TestCase):
         """
         The cells location showed in below graph.
 
-          0 1 2 3 4 5 6 7
-        0######
-        1     ### 1
-        2 #
+          1 2 3 4 5 6 7 8
+        1######
+        2     ### 1
         3 #
-        4 ### 2
-        5   #
+        4 #
+        5 ### 2
         6   #
-        7
+        7   #
+        8
         :return:
         """
         # given
 
-        set_for_scenario_1 = {Cell(x, y) for x, y in [(0, 0), (0, 1), (0, 2), (1, 2), (1, 3)]}
-        set_for_scenario_2 = {Cell(x, y) for x, y in [(2, 0), (3, 0), (4, 0), (4, 1), (5, 1)]}
+        set_for_scenario_1 = {Cell(x, y) for x, y in [(1, 1), (1, 2), (1, 3), (2, 3), (2, 4)]}
+        set_for_scenario_2 = {Cell(x, y) for x, y in [(3, 1), (4, 1), (5, 1), (5, 2), (6, 2)]}
         expected_cells_set_list = [set_for_scenario_1, set_for_scenario_2]
         cells_set = set()
         for cells_set_tmp in expected_cells_set_list:
