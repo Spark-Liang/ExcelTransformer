@@ -134,7 +134,7 @@ class FileWriter(object):
         :param Template template:
         :param dict[str,dict[str,object]] config:
         """
-        template_info_items = template.info_items
+        template_info_items = template.mapping_info_items
 
         info_item_dict = {}
         for info_item in template_info_items:

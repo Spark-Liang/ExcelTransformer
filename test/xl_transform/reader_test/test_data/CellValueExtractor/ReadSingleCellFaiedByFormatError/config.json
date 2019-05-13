@@ -1,0 +1,5 @@
+{
+  "type_hints": {
+    "test_param": "date(%Y/%m/%d)"
+  }
+}

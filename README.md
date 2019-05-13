@@ -99,19 +99,22 @@ sheet 来定位数据区域，所以模板中的 sheet 名称要和数据源 exc
 
 下面的示例将展示使用 “data \_ column \_direction” 属性控制数据提取的方向。
 
+模板文件的内容<br>
 ![](doc/img/955d9a73a36a9b5bcd403435dbdaf388.png)
 
-模板文件的内容
-
+控制文件的内容:<br>
 ![](doc/img/95fba427d1ef54fb7668b850d33b1ae5.png)
-
-控制文件的内容
 
 下面的示例将展示使用 冗余数据列控制数据提取的方向。该示例中我们添加多一列 “B”
 ，使得系统能够识别出应该从上往下提取数据，另外由于该模块提供数据投影的功能，即可以只写入对应数据列的内容到目标
-excel 文件中。
-
+excel 文件中。<br>
 ![](doc/img/5b73e926cd7d64c7949d6a9777e61db5.png)
+
+### 抽取特定单元格值
+使用此的的格式标记需要抽泣的特定单元格："{P:\<name of the cell that needed to extract\>}"<br>
+**此处需要注意的是：在每个模板文件中参数名称必须唯一。**
+
+同时可以通过给对应的单元格制定"type_hints"来限定抽取到内存中的数据的类型。下面是
 
 输出文件模板
 ------------
@@ -126,35 +129,32 @@ excel 文件中。
 
 下面的例子将更加详细地展示这个功能：
 
-1.  首先我们从源文件提取到如下的数据：
-
+1.  首先我们从源文件提取到如下的数据：<br>
 ![](doc/img/8473323f2163ebdbc8265f36a5bba7bd.png)
 
-1.  接着我们使用如下的输出模板文件：
-
+2.  接着我们使用如下的输出模板文件：<br>
 ![](doc/img/23d336539d23f2fdbc0d1bb7ee7cee82.png)
 
-1.  我们将在输出文件中得到如下内容：
-
+3.  我们将在输出文件中得到如下内容：<br>
 ![](doc/img/16807188ff974a50889ca5d80abb68ce.png)
 
 ### 输出区域检查功能
 
 该模块提供对数据输出区域检查的功能，当两个不同的数据区域出现相交的时候就会报错。以下是简单的示例将演示这一功能。
 
-1.  首先我们从源获取到如下的数据：
-
+1.  首先我们从源获取到如下的数据：<br>
 ![](doc/img/0c97d7ec6e70493917f8d8d3b2f5dba5.png)
 
-1.  然后我们使用如下的输出模板文件：
-
+2.  然后我们使用如下的输出模板文件：<br>
 ![](doc/img/43636ca6195b4d9d959dce97df129d5a.png)
 
-1.  我们可以很明显地看出，这两个数据输出区域将会如下图所示产生重叠：
-
+3.  我们可以很明显地看出，这两个数据输出区域将会如下图所示产生重叠：<br>
 ![](doc/img/0b33eb53e898928337e2cdceeef6f596.png)
 
-1.  此时就会报如下的错误，防止数据被意外地覆盖。
+4.  此时就会报如下的错误，防止数据被意外地覆盖。
+
+### 控制单个单元格输出
+**TBD**
 
 控制文件
 --------
@@ -179,11 +179,11 @@ excel 文件中。
 
 ![](doc/img/22d78e69094d8dedee43fa023a95d4f8.png)
 
-1.  然后我们使用如下的输入模板文件，提取该文件。
+2.  然后我们使用如下的输入模板文件，提取该文件。
 
 ![](doc/img/a30443177b708955d6a1410cafc98a25.png)
 
-1.  下面两幅图片将分别展示 “skip_header” 取 true 或者 false 时，数据提取的结果。
+3.  下面两幅图片将分别展示 “skip_header” 取 true 或者 false 时，数据提取的结果。
 
 ![](doc/img/be71251f5d6a2d9c4358becc13a08716.png)
 
@@ -196,15 +196,15 @@ excel 文件中。
 
 ![](doc/img/5d473b9fd5b05c1505370e0441cf8233.png)
 
-1.  我们使用如下的输入模板文件进行读取。
+2.  我们使用如下的输入模板文件进行读取。
 
 ![](doc/img/a4bfa0292a432c6e3a4f1010c472c38b.png)
 
-1.  当我们使用了 “rows_limit” 属性为3时，我们将得到如下的结果。
+3.  当我们使用了 “rows_limit” 属性为3时，我们将得到如下的结果。
 
 ![](doc/img/622b7a9026bc77fa630188af14f42ff5.png)
 
-1.  当我们没有定义 “rows_limit” 属性时，我们将得到如下的结果。
+4.  当我们没有定义 “rows_limit” 属性时，我们将得到如下的结果。
 
 ![](doc/img/ea269ff32e4edb69d684c77df2fd5e48.png)
 
@@ -310,9 +310,14 @@ API 工具
 dict，其中 key 是数据区域的名称，value 是读取到的数据，其类型为 DataFrame 。
 
 方法签名为:
+```python
+# FileReader.read(
+#   source_path:str,
+#   template_path:str,
+#   config_path=None:str
+# ) -> dict[str,DataFrame], dict[str,object]
+```
 
-FileReader.read(source_path:str,template_path:str,config_path=None:str) -\>
-dict[str,DataFrame]
 
 “FileWriter”
 ------------
@@ -322,9 +327,16 @@ dict[str,DataFrame]
 key 是数据区域的名称，value 是读取到的数据，其类型为 DataFrame 。
 
 方法签名为:
+```python
+# FileWriter.write(
+#     target_path:str,
+#     template_path:str,
+#     data:dict[str,DataFrame],
+#     param_data:[str,object]
+#     config_path=None:str
+# )-> None
+```
 
-FileWriter.write(target_path:str,template_path:str,data:dict[str,DataFrame],config_path=None:str)
--\> None
 
 附录
 ====

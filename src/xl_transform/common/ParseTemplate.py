@@ -23,11 +23,11 @@ class Template(object):
         if not template_file_path.endswith(".xlsx"):
             err_msg = "Unsupported type of file: " + template_file_path
             raise Exception(err_msg)
-        self.__info_items = parse_excel_template(template_file_path)
+        self.__mapping_info_items, self.__cell_info_items = parse_excel_template(template_file_path)
 
     @property
-    def info_items(self):
-        return list(self.__info_items)
+    def mapping_info_items(self):
+        return list(self.__mapping_info_items)
 
 
 class TemplateInfoItem(object):
@@ -109,21 +109,69 @@ class TemplateInfoItem(object):
         ))
 
 
+class CellTemplateInfoItem(object):
+
+    def __init__(
+            self,
+            sheet_name,
+            param_name,
+            cell
+    ):
+        """
+
+        :param str sheet_name:
+        :param str param_name:
+        :param Cell cell:
+        """
+        self.__sheet_name = sheet_name
+        self.__param_name = param_name
+        self.__cell = cell
+
+    @property
+    def sheet_name(self):
+        return self.__sheet_name
+
+    @property
+    def param_name(self):
+        return self.__param_name
+
+    @property
+    def cell(self):
+        return self.__cell
+
+    def __hash__(self):
+        return hash((
+            self.__sheet_name,
+            self.__param_name,
+            self.__cell
+        ))
+
+    def __eq__(self, other):
+        if not isinstance(other, CellTemplateInfoItem):
+            return False
+        return (
+                self.__sheet_name == other.__sheet_name
+                and self.__param_name == other.__param_name
+                and self.__cell == self.__cell
+        )
+
+
 def parse_excel_template(filename):
     """
 
     :param str filename:
     :return:
-    :rtype: list[TemplateInfoItem]
+    :rtype: (list[TemplateInfoItem], dict[str,CellTemplateInfoItem])
     """
-    result = []
+    mapping_info_items = []
+    cell_info_items = []
 
     wb = openpyxl.load_workbook(filename, read_only=True)
     for sheet in wb:
-        result.extend(
-            __parse_work_sheet(sheet)
-        )
-    return result
+        mapping_info_items_in_sheet, cell_info_items_in_sheet = __parse_work_sheet(sheet)
+        mapping_info_items.extend(mapping_info_items_in_sheet)
+        cell_info_items.extend(cell_info_items_in_sheet)
+    return mapping_info_items, cell_info_items
 
 
 def __parse_work_sheet(sheet):
@@ -131,13 +179,28 @@ def __parse_work_sheet(sheet):
 
     :param Worksheet sheet:
     :return:
+    :rtype: (list[TemplateInfoItem],list[CellTemplateInfoItem])
     """
     max_x, max_y = sheet.max_row, sheet.max_column
+    single_cell_info_items = []
     target_cell_info_dict = {}
     for x in range(1, max_x + 1):
         for y in range(1, max_y + 1):
             cell_value = sheet.cell(x, y).value
             if isinstance(cell_value, str):
+                # parse single cell value extract
+                pattern = r'^\s*\$\{P\:([^}]+?)\}\s*$'
+                match_obj = re.match(pattern, cell_value)
+                if match_obj is not None:
+                    single_cell_info_items.append(
+                        CellTemplateInfoItem(
+                            sheet.title,
+                            match_obj.group(1),
+                            Cell(x, y)
+                        )
+                    )
+                    continue
+
                 __parse_cell_info_and_set_target_into_dict(
                     x, y, cell_value, target_cell_info_dict
                 )
@@ -145,8 +208,11 @@ def __parse_work_sheet(sheet):
     list_of_contact_cells_set = \
         CellsSetUtils.separate_cells_set_into_contacted_cells_set(target_cells)
     # check if all the shape of the contacted cells are orthorhombic line.
-    return __check_line_shape_and_construct_parse_result_items(
-        sheet.title, list_of_contact_cells_set, target_cell_info_dict
+    return (
+        __check_line_shape_and_construct_parse_result_items(
+            sheet.title, list_of_contact_cells_set, target_cell_info_dict
+        ),
+        single_cell_info_items
     )
 
 

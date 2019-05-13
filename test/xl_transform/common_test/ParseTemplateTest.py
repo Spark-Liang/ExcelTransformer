@@ -4,7 +4,7 @@ from os import path
 from test_util import MessageUtil
 from xl_transform.common import Cell
 from xl_transform.common import ParseTemplate as SUT
-from xl_transform.common.ParseTemplate import TemplateInfoItem, row, column
+from xl_transform.common.ParseTemplate import TemplateInfoItem, CellTemplateInfoItem, row, column
 
 
 class TestParseExcelTemplate(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestParseExcelTemplate(unittest.TestCase):
         template_path = self.get_test_file_path("TemplateWithSingleMapping.xlsx")
 
         # when
-        result = SUT.parse_excel_template(template_path)
+        result = SUT.parse_excel_template(template_path)[0]
 
         # then
         result_item = result[0]
@@ -44,7 +44,7 @@ class TestParseExcelTemplate(unittest.TestCase):
         template_path = self.get_test_file_path("TemplateWithTwoMapping.xlsx")
 
         # when
-        result = SUT.parse_excel_template(template_path)
+        result = SUT.parse_excel_template(template_path)[0]
 
         # then
         expected_items = {
@@ -70,7 +70,7 @@ class TestParseExcelTemplate(unittest.TestCase):
         template_path = self.get_test_file_path("TemplateWithHorizontalAndVeritcalMapping.xlsx")
 
         # when
-        result = SUT.parse_excel_template(template_path)
+        result = SUT.parse_excel_template(template_path)[0]
 
         # then
         expected_items = {
@@ -96,7 +96,7 @@ class TestParseExcelTemplate(unittest.TestCase):
         template_path = self.get_test_file_path("TemplateWithTwoSheet.xlsx")
 
         # when
-        result = SUT.parse_excel_template(template_path)
+        result = SUT.parse_excel_template(template_path)[0]
 
         # then
         expected_items = {
@@ -130,13 +130,36 @@ class TestParseExcelTemplate(unittest.TestCase):
         template_path = self.get_test_file_path("TemplateWithSingleCell.xlsx")
 
         # when
-        result = SUT.parse_excel_template(template_path)
+        result = SUT.parse_excel_template(template_path)[0]
 
         # then
         expected_items = {
             TemplateInfoItem(
                 "TestOut", Cell(2, 2),
                 "TBL_1", ["1"], None
+            )
+        }
+        self.assertEqual(
+            expected_items, set(result),
+            "expected_items: {};\nresult: {}".format(
+                MessageUtil.format_collection(expected_items),
+                MessageUtil.format_collection(result)
+            )
+        )
+
+    def test_parse_single_cell_extractor(self):
+        # given
+        template_path = self.get_test_file_path("TemplateWithSingleCellExtract.xlsx")
+
+        # when
+        result = SUT.parse_excel_template(template_path)[1]
+
+        # then
+        expected_items = {
+            CellTemplateInfoItem(
+                "TestSingleCellExtract",
+                "test_param",
+                Cell(6, 3)
             )
         }
         self.assertEqual(

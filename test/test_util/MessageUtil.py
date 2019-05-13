@@ -4,8 +4,16 @@ def format_collection(collection):
     :param dict or set or list or tuple collection:
     :return:
     """
-    if isinstance(collection, set):
-        return
+    if is_collection(collection):
+        if isinstance(collection, set):
+            return format_set(collection)
+        if isinstance(collection, list):
+            return format_list(collection)
+        if isinstance(collection, dict):
+            return format_dict(collection)
+    else:
+        return str(collection)
+
 
 
 def is_collection(o):

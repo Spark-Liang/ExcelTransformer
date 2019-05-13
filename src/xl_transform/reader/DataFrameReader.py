@@ -36,7 +36,7 @@ class DataFrameReader(object):
 
     def read(self, source_file_path):
         """
-
+        Read a dataFrame from the given excel file.
         :param str source_file_path:
         :return: mapping name and data frame
         :rtype: (str,DataFrame)
