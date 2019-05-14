@@ -4,7 +4,7 @@ import os
 from pandas import DataFrame
 
 from xl_transform.common import Template
-from xl_transform.reader import DataFrameReader
+from xl_transform.reader import DataFrameReader, CellValueExtractor
 
 
 class FileReader(object):
@@ -37,17 +37,20 @@ class FileReader(object):
                 for mapping_name, info_item in info_item_dict.items()
             }
 
+        self.__cells_reader = CellValueExtractor(template, config)
+
     def read_data(self, filepath):
         """
 
         :param filepath:
         :return:
-        :rtype: dict[str,DataFrame]
+        :rtype: (dict[str,DataFrame],dict[str,object])
         """
-        result = {}
+        mapping_result = {}
         for mapping_name, reader in self.__reader_dict.items():
-            result[mapping_name] = reader.read(filepath)[1]
-        return result
+            mapping_result[mapping_name] = reader.read(filepath)[1]
+
+        return mapping_result, self.__cells_reader.read(filepath)
 
     @staticmethod
     def read(
@@ -56,12 +59,13 @@ class FileReader(object):
             config_path=None
     ):
         """
-
+        Read the Excel based on the given template and config file.
+        Than result the required data in the target are or some target cell.
         :param str source_path: The path of the source excel file.
         :param str template_path: The path of the template excel file.
         :param str config_path: The path of the configuration file.
         :return:
-        :rtype: dict[str,DataFrame]
+        :rtype: (dict[str,DataFrame],dict[str,object])
         """
         # check target path
         if not os.path.exists(source_path):

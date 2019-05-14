@@ -12,14 +12,15 @@ def transfer(
         output_path,
         config_path=None
 ):
+    extracted_mapping_data = FileReader.read(
+        data_source_path,
+        data_source_template_path,
+        config_path
+    )[0]
     FileWriter.write(
         output_path,
         output_template_path,
-        FileReader.read(
-            data_source_path,
-            data_source_template_path,
-            config_path
-        ),
+        extracted_mapping_data,
         config_path
     )
 

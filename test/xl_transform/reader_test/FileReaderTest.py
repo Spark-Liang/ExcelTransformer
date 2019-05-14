@@ -64,7 +64,7 @@ class TestRead(unittest.TestCase):
         template_path = get_test_template_path(test_name)
         config_path = get_reader_config_path(test_name)
         # when
-        result = SUT.read(source_path, template_path, config_path)
+        result = SUT.read(source_path, template_path, config_path)[0]
         # then
         assert_expected_equal_to_result(self, expected_dict_of_data_frame, result)
 

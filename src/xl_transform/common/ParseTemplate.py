@@ -29,6 +29,10 @@ class Template(object):
     def mapping_info_items(self):
         return list(self.__mapping_info_items)
 
+    @property
+    def cell_info_items(self):
+        return self.__cell_info_items.copy()
+
 
 class TemplateInfoItem(object):
     """
@@ -161,7 +165,7 @@ def parse_excel_template(filename):
 
     :param str filename:
     :return:
-    :rtype: (list[TemplateInfoItem], dict[str,CellTemplateInfoItem])
+    :rtype: (list[TemplateInfoItem], list[CellTemplateInfoItem])
     """
     mapping_info_items = []
     cell_info_items = []
