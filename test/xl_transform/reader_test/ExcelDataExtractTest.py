@@ -18,7 +18,7 @@ class ExcelExtractTest(unittest.TestCase):
             "decimal": [1, 1.1, -1],
             "date": [datetime.strptime(val, "%Y/%m/%d %H:%M:%S")
                      for val in ["2019/12/31 23:59:22", "2019/11/30 23:59:22", "2019/01/31 23:59:22"]]
-        })
+        }, dtype=object)
         source_data_path = path.join(path.dirname(__file__), "test_data", "TestExcelDataExtractData.xlsx")
 
         # when

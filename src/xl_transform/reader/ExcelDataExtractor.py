@@ -84,6 +84,7 @@ def extract_data_frame(
             return convert_by_converter(header_str, cell, converter)
         if dtype is not None:
             return convert_by_type_hint(header_str, cell, dtype)
+
         return cell.value
 
     # extract data from excel
@@ -128,7 +129,7 @@ def extract_data_frame(
         for header, value_list in data_dict.items()
     }
 
-    return DataFrame(data_dict, columns=header_list)
+    return DataFrame(data_dict, columns=header_list, dtype=object)
 
 
 def extract_header(sheet, start_row_idx, start_col_idx, header_row_direction, data_column_limit):

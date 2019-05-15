@@ -1,5 +1,4 @@
-from typing import Iterable
-
+# from typing import Iterable
 
 def separate_cells_set_into_contacted_cells_set(cells_set):
     """

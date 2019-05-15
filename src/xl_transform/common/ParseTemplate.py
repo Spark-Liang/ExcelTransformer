@@ -31,7 +31,7 @@ class Template(object):
 
     @property
     def cell_info_items(self):
-        return self.__cell_info_items.copy()
+        return [item for item in self.__cell_info_items]
 
 
 class TemplateInfoItem(object):
@@ -175,7 +175,7 @@ def parse_excel_template(filename):
         mapping_info_items_in_sheet, cell_info_items_in_sheet = __parse_work_sheet(sheet)
         mapping_info_items.extend(mapping_info_items_in_sheet)
         cell_info_items.extend(cell_info_items_in_sheet)
-    return mapping_info_items, cell_info_items
+    return (mapping_info_items, cell_info_items)
 
 
 def __parse_work_sheet(sheet):
@@ -191,7 +191,9 @@ def __parse_work_sheet(sheet):
     for x in range(1, max_x + 1):
         for y in range(1, max_y + 1):
             cell_value = sheet.cell(x, y).value
-            if isinstance(cell_value, str):
+
+            from xl_transform.common.PyVersionCompatibleUtils import is_string
+            if is_string(cell_value):
                 # parse single cell value extract
                 pattern = r'^\s*\$\{P\:([^}]+?)\}\s*$'
                 match_obj = re.match(pattern, cell_value)

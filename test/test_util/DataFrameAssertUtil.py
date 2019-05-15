@@ -110,9 +110,10 @@ def assert_value_in_cell_is_equal(test_case, expected_cell, actual_cell):
     elif isinstance(expected_val, float):
         test_case.assertAlmostEqual(float(expected_val), float(actual_val))
     else:
+        err_msg = "value in cell ({},{}) is not equal".format(expected_cell.row, expected_cell.column)
         test_case.assertEqual(
             expected_val, actual_val,
-            "value in cell ({}.{}) is not equal".format(expected_cell.row, expected_cell.column)
+            err_msg
         )
 
 
@@ -133,10 +134,12 @@ def assert_data_in_data_frame_is_equal(test_case, expected_df, result_df, assert
     )
 
     max_x, max_y = expected_df.shape
-    for x in range(0, max_x):
-        for y in range(0, max_y):
-            expected_cell = expected_df.iloc[x].iloc[y]
-            actual_cell = result_df.iloc[x].iloc[y]
+    for header in expected_df.columns.to_list():
+        expected_col = expected_df[header]
+        result_col = result_df[header]
+        for row_idx in range(0, max_y):
+            expected_cell = expected_col[row_idx]
+            actual_cell = result_col[row_idx]
             assert_func(test_case, expected_cell, actual_cell)
 
 

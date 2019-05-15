@@ -5,6 +5,8 @@ from datetime import datetime
 from openpyxl.cell.cell import Cell
 from openpyxl.styles import numbers
 
+from xl_transform.common.PyVersionCompatibleUtils import is_string
+
 
 def get_cell_value_convert_func(type_hint):
     """
@@ -34,7 +36,7 @@ def get_cell_value_convert_func(type_hint):
             :param Cell cell:
             :return:
             """
-            if isinstance(cell.value, str):
+            if is_string(cell.value):
                 return datetime.strptime(cell.value, date_format)
             return cell.value
 
@@ -51,7 +53,7 @@ def get_cell_value_convert_func(type_hint):
             :return:
             """
             val = cell.value
-            if isinstance(val, str):
+            if is_string(cell.value):
                 return decimal.Decimal(cell.value)
             elif isinstance(val, (int, float)):
                 return decimal.Decimal(formatter.format(val))
