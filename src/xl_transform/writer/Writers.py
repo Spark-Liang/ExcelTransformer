@@ -205,6 +205,7 @@ class FileWriter(object):
         :param None or str config_path: The path of the configuration file.
         :return:
         """
+        target_path = os.path.abspath(target_path)
         parent_dir_of_target = os.path.dirname(target_path)
         # check target path
         if not os.path.exists(parent_dir_of_target):
@@ -219,6 +220,7 @@ class FileWriter(object):
             raise Exception(err_msg)
 
         # check template path
+        template_path = os.path.abspath(template_path)
         if not os.path.exists(template_path):
             err_msg = "The given path of the template file does not exists, please check you path: '{}'.".format(
                 template_path
@@ -233,6 +235,7 @@ class FileWriter(object):
 
         # check config path
         if config_path is not None:
+            config_path = os.path.abspath(config_path)
             if not os.path.exists(config_path):
                 err_msg = "The given path of the config file is not a file, please check you path: '{}'.".format(
                     template_path

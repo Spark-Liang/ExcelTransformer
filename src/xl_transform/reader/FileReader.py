@@ -68,6 +68,7 @@ class FileReader(object):
         :rtype: (dict[str,DataFrame],dict[str,object])
         """
         # check target path
+        source_path = os.path.abspath(source_path)
         if not os.path.exists(source_path):
             err_msg = "The given path of the source file does not exists, please check you input :'{}'.".format(
                 source_path
@@ -80,6 +81,7 @@ class FileReader(object):
             raise Exception(err_msg)
 
         # check template path
+        template_path = os.path.abspath(template_path)
         if not os.path.exists(template_path):
             err_msg = "The given path of the template file does not exists, please check you path: '{}'.".format(
                 template_path
@@ -94,6 +96,7 @@ class FileReader(object):
 
         # check config path
         if config_path is not None:
+            config_path = os.path.abspath(config_path)
             if not os.path.exists(config_path):
                 err_msg = "The given path of the config file is not a file, please check you path: '{}'.".format(
                     template_path

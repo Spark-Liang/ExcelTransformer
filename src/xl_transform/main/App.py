@@ -25,14 +25,14 @@ def transfer(
     )
 
 
-if __name__ == '__main__':
+def main():
     usageStr = """xl_transform \\ 
-                    --source or -s <source excel path>  \\
-                    --source-template <source template file path> \\
-                    --target-template <target template file path> \\
-                    --target or -t <target excel file path> \\
-                    --conf <control file path>
-                """
+                        --source or -s <source excel path>  \\
+                        --source-template <source template file path> \\
+                        --target-template <target template file path> \\
+                        --target or -t <target excel file path> \\
+                        --conf <control file path>
+                    """
     try:
         opts, args = getopt.getopt(sys.argv[1:], "s:t:",
                                    ["source=", "source-template=", "target-template=", "target=", "conf="])
@@ -63,3 +63,7 @@ if __name__ == '__main__':
         output_path=opts_dict["t"] if "t" in opts_dict else opts_dict["target"],
         config_path=opts_dict["conf"] if "conf" in opts_dict else None
     )
+
+
+if __name__ == '__main__':
+    main()
